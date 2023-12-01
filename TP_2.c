@@ -1,7 +1,10 @@
-#include<stdio.h>
-#include<stdbool.h>
+#include <stdio.h>
 
 
-int main() {
-   printf("hello world"); 
+
+int main(){
+ int B;  
+printf("enter :");
+scanf("%d", &B);
+
 }
