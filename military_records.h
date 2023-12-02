@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 
 #define B 6 // Nb enregistrement par bloc
 
@@ -23,7 +24,6 @@ typedef struct {
 }TDate_Naissance;
 
 typedef struct {
-    int cle;  // La cle
     int Matricule;
     TNOM_PRENOM  Nom ;
     TNOM_PRENOM  Prenom ;
@@ -123,10 +123,10 @@ void INIT_Entete(FILE* F) {
 
 // Function to initialize the file and header
 void INIT(FILE** F, const char nom[] , const char mode[1]) {
-    if (mode == "N") {
+    if (strcmp(mode, "N") == 0) {
         *F = fopen(nom, "wb+");
         INIT_Entete(*F);
-    } else if(mode == "A") {
+    } else if (strcmp(mode, "A") == 0) {
         *F = fopen(nom, "rb+");
         if (*F == NULL) {
             *F = fopen(nom, "wb");
@@ -222,8 +222,6 @@ bool intervale (int value, int tableau[], int taille) {
 
 void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
 
-     TEnregistre e;
-
     int i = 1, j = 0 ,k1 , random ;
     tab_utilise* tab_mat = tab_matricule(n);
     bool inser_matricule ;
@@ -254,7 +252,7 @@ void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
 
             Buf->Tab[j].Nom.NB_char = getRandomNumber(4,30) ;
 
-            for (k1 = 0; k1++ ; k1 < (Buf->Tab[j].Nom.NB_char) )
+            for (k1 = 0; k1 < Buf->Tab[j].Nom.NB_char; k1++)
             {
                 Buf->Tab[j].Nom.Tab_n[k1] =getRandomNumber(1,26) ;
             }
@@ -344,7 +342,7 @@ void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
 
             Buf->Tab[0].Nom.NB_char = getRandomNumber(4,30) ;
 
-            for (k1 = 0; k1++ ; k1 < (Buf->Tab[j].Nom.NB_char) )
+            for (k1 = 0; k1 < Buf->Tab[j].Nom.NB_char; k1++)
             {
                 Buf->Tab[0].Nom.Tab_n[k1] =getRandomNumber(1,26) ;
             }
@@ -418,4 +416,4 @@ void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
     Aff_Entete(F, i, 1);
     Aff_Entete(F, n, 2);
 }
-#endif 
+#endif  
