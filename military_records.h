@@ -435,6 +435,36 @@ while ((*i<=N) && (*Trouv == false))
  { *i++; }}
 }
 
+void Insertion_TObarreF(TEnregistre e , FILE* F , Buffer* Buf)
+{
+    bool trouve ;
+    int i,j,k;
+    int c = e.Matricule;
+    Recherche_TObarreF( c, F , &trouve , &i , &j , Buf);
+
+    if (!trouve)
+    { int N = Entete( F, 1 );
+
+      if (N != 0) // si le fichier n’est pas vide,
+      { LireDir( F, N, Buf ); } // lire le dernier bloc.
+
+      else // si fichier vide,
+      { N = 1; // initialiser le 1er bloc...
+       Aff_Entete( F, 1, 1 ) ; // (qui est en même temps le dernier bloc)...
+        Buf->Nb = 0 ;} 
+
+       if (Buf->Nb < B )// s'il ya de la place dans ce bloc...
+       {Buf->Nb = Buf->Nb + 1; // inserer e dans ce bloc
+        Buf->Tab[Buf->Nb] = e ;
+        EcrireDir( F, N, Buf );}
+        else{
+            Buf->Nb = 1; // inserer e dans le bloc N+1
+            Buf->Tab[1] = e;
+            EcrireDir( F, N+1, Buf );
+            Aff_Entete( F, 1, N+1 ); // et mettre à jour l'entête 
+           }
+    }
+}
 
 #endif 
 #endif  
