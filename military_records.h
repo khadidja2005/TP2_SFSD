@@ -465,6 +465,47 @@ void Insertion_TObarreF(TEnregistre e , FILE* F , Buffer* Buf)
            }
     }
 }
+void Suppression_TObarreF(TEnregistre e , FILE* F ,Buffer* Buf){
+   
+    bool trouve ;
+    int i,j;
+    Buffer* Buf1 ;
+    Buffer* Buf2 ;
+    int c = e.Matricule; 
 
+  Recherche_TObarreF( c, F , &trouve , &i , &j , Buf);
+  if (trouve)
+  { int N = Entete( F, 1 );
+
+  if (i != N) // e ne se trouve pas dans le dernier bloc
+{  LireDir( F, i, Buf1 );
+   LireDir( F, N, Buf2 );
+
+// déplacement du dernier enreg de buf2 dans buf1 ...
+
+Buf1->Tab[j] = Buf2->Tab[Buf2->Nb]; // en écrasant e
+Buf2->Nb = Buf2->Nb - 1;
+
+// réécriture des blocs sur disque ...
+
+EcrireDir( F, i, Buf1 );
+if (Buf2->Nb > 0) // si buf2 n'est pas vide ...
+{EcrireDir( F, N, Buf2 );} // l'écrire sur disque
+else // si buf2 devient vide ...
+{Aff_Entete( F, 1, N-1); }}// modifier l'entête (dernier bloc)
+
+ else
+ {
+  LireDir( F, N, Buf );
+
+  Buf->Tab[j] = Buf->Tab[Buf->Nb]; // remplacer e par le dernier enreg
+  Buf->Nb = Buf->Nb - 1;
+
+// réécriture du bloc sur disque s'il n'est pas vide
+if (Buf->Nb > 0 ) {EcrireDir( F, N, Buf );}
+
+// sinon, si le bloc devient vide ...
+else {Aff_Entete( F, 1, N-1); }// modifier l'entête (dernier bloc)
+ } } }
 #endif 
 #endif  
