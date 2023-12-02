@@ -416,4 +416,25 @@ void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
     Aff_Entete(F, i, 1);
     Aff_Entete(F, n, 2);
 }
+void Recherche_TObarreF(int c, FILE* F ,bool* Trouv, int* i, int* j, Buffer* Buf)
+{
+ int N = Entete(F,1);
+ *i = 1; *j = 1; *Trouv = false ;
+
+while ((*i<=N) && (*Trouv == false))
+{
+  LireDir( F, *i, Buf );
+  *j = 1;
+  while ((*j <= Buf->Nb) && (*Trouv == false))
+  {
+   if(c = Buf->Tab[*j].Matricule  )
+    { *Trouv = true;}   
+   else 
+    {*j++;}}
+ if (*Trouv == false)
+ { *i++; }}
+}
+
+
+#endif 
 #endif  
