@@ -588,7 +588,7 @@ bool LireDir_index(FILE* F, int i, Buffer_index* Buf) {
 }
 
 
-void rech_index(int c, bool* Trouve, int* i, int* j, FILE* F, Buffer_index* Buf) {
+void rech_TOF(int c, bool* Trouve, int* i, int* j, FILE* F, Buffer_index* Buf) {
     int bi = 1, bs = Entete_index(F, 1), inf, sup;
     bool stop = false;
     *Trouve = false;
@@ -637,7 +637,7 @@ void Inserer_TOF(int c , int bloc , int enreg  , FILE* F , Buffer_index* Buf) {
     e.bloc= bloc ;
     e.enrg = enreg ;
     e.eff = 0;
-    rech_index(c , &trouve , &i , &j , F , Buf);
+    rech_TOF(c , &trouve , &i , &j , F , Buf);
     if (!trouve) {
         continu = true;
         while(continu && i <= Entete_index(F , 1)) {
@@ -671,11 +671,11 @@ void Inserer_TOF(int c , int bloc , int enreg  , FILE* F , Buffer_index* Buf) {
     }
 }
 
-void Suppression_logique_index(int c,FILE* F , Buffer_index* Buf) {
+void Suppression_logique_TOF(int c,FILE* F , Buffer_index* Buf) {
     bool trouve;
     int i, j ;
 
-    rech_index(c , &trouve , &i , &j , F , Buf);
+    rech_TOF(c , &trouve , &i , &j , F , Buf);
     if (trouve) {
         LireDir_index(F , i , Buf);
         Buf->Tab[j].eff = 1;
@@ -684,7 +684,7 @@ void Suppression_logique_index(int c,FILE* F , Buffer_index* Buf) {
     }
 }
 
-void Reorganisation_index(FILE** F, float u, const char nomFichier[]) {
+void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
     int i1, j1, i2, j2, cpt;
     Buffer_index Buf1, Buf2;
     FILE* G;
@@ -755,5 +755,65 @@ void Reorganisation_index(FILE** F, float u, const char nomFichier[]) {
     INIT(F, nomFichier, "A");
 
 }
+
+void chargement_TOF_par_Table_index (TEnregistre_index* T, FILE* F ) {
+    FILE* fichier_index ;
+    Buffer_index* Buf ;
+    int i;
+    int taille = Entete(F , 1);
+    for (i = 0 ; i< taille ; i++) {
+        Inserer_TOF(T[i].Matricule , T[i].bloc, T[i].enrg, fichier_index , Buf) ;
+    }
+
+}
+void Rech_dichoto_dans_table_index (int cle , TEnregistre_index* T , bool *trouv , int *i , int taille ) {
+ int bi , bs ;
+ bi = 1 ;
+ bs = taille ;
+ *trouv = false ;
+ while(bi <= bs && !*trouv) {
+  *i = (bi + bs )/ 2 ;
+  if(T[*i].Matricule == cle) {
+    *trouv = true ;
+  } else {
+    if(cle < T[*i].Matricule){
+       bs= *i - 1 ;
+    } else {
+        bi = *i + 1 ;
+    }
+  }   
+ }
+   if ( !trouv) {
+    *i = bi ;
+   }
+} 
+
+void isertion_de_e_dans_la_table_index (int cle , int bloc , int enregistrement , TEnregistre_index* *T , FILE* F) {
+TEnregistre_index e ;
+bool trouv ;
+int i ;
+int j ;
+int taille ;
+taille = Entete(F , 1) - 1;
+e.Matricule = cle ;
+e.bloc = bloc ;
+e.enrg = enregistrement ;
+e.eff = 0 ;
+Rech_dichoto_dans_table_index(cle ,*T , &trouv , &i,taille );
+if(!trouv) { 
+j = taille ;
+    int newSize = taille+ 1;
+    *T = (TEnregistre_index *)realloc(*T, newSize * sizeof(int));
+while (j > i) {
+ *T[j] = *T[j - 1] ;
+ j= j - 1 ;
+}
+if ( j == i)
+*T[j] = e ;
+
+}
+}
+ 
 #endif  
+
 
