@@ -516,41 +516,35 @@ else {Aff_Entete( F, 1, N-1); }// modifier l'entête (dernier bloc)
 //  machines abstraites TOF
 typedef struct {
     int Matricule;
-    TNOM_PRENOM  Nom ;
-    TNOM_PRENOM  Prenom ;
-    TDate_Naissance DATE;
-    int wilaya ;
-    int Groupe_Sanguin;
-    int Grade;
-    int Force_armee;
-    int Region_militaire;
+    int bloc ;
+    int enrg;
     bool eff;
-} TEnregistre_TOF;
+} TEnregistre_index;
 typedef struct {
-    TEnregistre_TOF Tab[B];
+    TEnregistre_index Tab[B];
     int Nb; // Nombre de Tenreg dans le bloc
-} TBloc_TOF, Buffer_TOF;
+} TBloc_index, Buffer_index;
 typedef struct {
     int Nb_bloc;
     int Nb_enreg;
     int Nb_eff;
-} TEntete_TOF;
+} TEntete_index;
 
-const int Taille_entete_TOF = sizeof(TEntete_TOF);
+const int Taille_entete_index = sizeof(TEntete_index);
 
-void INIT_Entete_TOF(FILE* F) {
-    TEntete_TOF Entete;
+void INIT_Entete_index(FILE* F) {
+    TEntete_index Entete;
     Entete.Nb_bloc = 0;
     Entete.Nb_enreg = 0;
     Entete.Nb_eff = 0;
     fseek(F, 0, SEEK_SET);
-    fwrite(&Entete, sizeof(TEntete_TOF), 1, F);
+    fwrite(&Entete, sizeof(TEntete_index), 1, F);
 }
-int Entete_TOF(FILE* F, int i) {
+int Entete_index(FILE* F, int i) {
     if (F != NULL) {
-        TEntete_TOF Entete;
+        TEntete_index Entete;
         fseek(F, 0, SEEK_SET);
-        fread(&Entete, sizeof(TEntete_TOF), 1, F);
+        fread(&Entete, sizeof(TEntete_index), 1, F);
         if (i == 1) return Entete.Nb_bloc;
         if (i == 2) return Entete.Nb_enreg;
         if (i == 3) return Entete.Nb_eff;
@@ -558,35 +552,35 @@ int Entete_TOF(FILE* F, int i) {
     return -1;  // Return an error value if the file is not open
 }
 
-void Aff_Entete_TOF(FILE* F, int Nb , int i) {
+void Aff_Entete_index(FILE* F, int Nb , int i) {
     if (F != NULL) {
-        TEntete_TOF Entete;
+        TEntete_index Entete;
         fseek(F , 0 , SEEK_SET);
-        fread(&Entete , Taille_entete_TOF , 1 , F);
+        fread(&Entete , Taille_entete_index , 1 , F);
         if (i == 1) Entete.Nb_bloc = Nb;
         if (i == 2) Entete.Nb_enreg = Nb;
         if (i == 3) Entete.Nb_eff = Nb;
         fseek(F, 0, SEEK_SET);
-        fwrite(&Entete, sizeof(TEntete_TOF), 1, F);
+        fwrite(&Entete, sizeof(TEntete_index), 1, F);
     }
 }
-bool EcrireDir_TOF(FILE* F, int i, Buffer_TOF* Buf) {
-    if (F == NULL || i <= 0 || fseek(F, (i - 1) * sizeof(Buffer_TOF) + Taille_entete_TOF, SEEK_SET) != 0) {
+bool EcrireDir_index(FILE* F, int i, Buffer_index* Buf) {
+    if (F == NULL || i <= 0 || fseek(F, (i - 1) * sizeof(Buffer_index) + Taille_entete_index, SEEK_SET) != 0) {
         return false;
     }
 
-    if (fwrite(Buf, sizeof(Buffer_TOF), 1, F) != 1) {
+    if (fwrite(Buf, sizeof(Buffer_index), 1, F) != 1) {
         return false;  // Check if the write was successful
     }
 
     return true;
 }
-bool LireDir_TOF(FILE* F, int i, Buffer_TOF* Buf) {
-    if (F == NULL || i <= 0 || fseek(F, (i - 1) * sizeof(Buffer_TOF) + Taille_entete_TOF, SEEK_SET) != 0) {
+bool LireDir_index(FILE* F, int i, Buffer_index* Buf) {
+    if (F == NULL || i <= 0 || fseek(F, (i - 1) * sizeof(Buffer_index) + Taille_entete_index, SEEK_SET) != 0) {
         return false;
     }
 
-    if (fread(Buf, sizeof(Buffer_TOF), 1, F) != 1) {
+    if (fread(Buf, sizeof(Buffer_index), 1, F) != 1) {
         return false;  // Check if the read was successful
     }
 
@@ -594,15 +588,15 @@ bool LireDir_TOF(FILE* F, int i, Buffer_TOF* Buf) {
 }
 
 
-void rech_TOF(int c, bool* Trouve, int* i, int* j, FILE* F, Buffer_TOF* Buf) {
-    int bi = 1, bs = Entete_TOF(F, 1), inf, sup;
+void rech_index(int c, bool* Trouve, int* i, int* j, FILE* F, Buffer_index* Buf) {
+    int bi = 1, bs = Entete_index(F, 1), inf, sup;
     bool stop = false;
     *Trouve = false;
     *j = 0;
 
     while (bi <= bs && !(*Trouve) && !stop) {
         *i = (bi + bs) / 2;
-        LireDir_TOF(F, *i, Buf);
+        LireDir_index(F, *i, Buf);
         if (c >= Buf->Tab[0].Matricule && c <= Buf->Tab[Buf->Nb - 1].Matricule) {
             inf = 0;
             sup = Buf->Nb - 1;
@@ -635,27 +629,19 @@ void rech_TOF(int c, bool* Trouve, int* i, int* j, FILE* F, Buffer_TOF* Buf) {
 }
 
 
-void Inserer_TOF(int c ,TNOM_PRENOM nom , TNOM_PRENOM prenom,TDate_Naissance born , int wilaya, int blood ,int grade, int force , int region  , FILE* F , Buffer_TOF* Buf) {
+void Inserer_TOF(int c , int bloc , int enreg  , FILE* F , Buffer_index* Buf) {
     bool trouve , continu;
     int i,j,k;
-    TEnregistre_TOF e,x;
+    TEnregistre_index e,x;
     e.Matricule = c;
-    e.Nom = nom ;
-    e.Prenom = prenom ;
-    e.DATE = born ;
-    e.wilaya = wilaya ;
-    e.Groupe_Sanguin = blood ;
-    e.Grade = grade ;
-    e.Force_armee = force ;
-    e.Region_militaire = region ;
+    e.bloc= bloc ;
+    e.enrg = enreg ;
     e.eff = 0;
-
-    rech_TOF(c , &trouve , &i , &j , F , Buf);
-
+    rech_index(c , &trouve , &i , &j , F , Buf);
     if (!trouve) {
         continu = true;
-        while(continu && i <= Entete_TOF(F , 1)) {
-            LireDir_TOF(F , i , Buf);
+        while(continu && i <= Entete_index(F , 1)) {
+            LireDir_index(F , i , Buf);
             x = Buf->Tab[Buf->Nb - 1];
             k = Buf->Nb - 1;
             while (k>j) {
@@ -663,45 +649,44 @@ void Inserer_TOF(int c ,TNOM_PRENOM nom , TNOM_PRENOM prenom,TDate_Naissance bor
                 k = k-1;
             }
             Buf->Tab[j] = e;
-
             if (Buf->Nb < B) {
                 Buf->Nb = Buf->Nb + 1;
                 Buf->Tab[Buf->Nb - 1] = x;
-                EcrireDir_TOF(F , i , Buf);
+                EcrireDir_index(F , i , Buf);
                 continu = false;
             } else {
-                EcrireDir_TOF(F , i , Buf);
+                EcrireDir_index(F , i , Buf);
                 i = i + 1;
                 j = 0;
                 e = x;
             }
         }
-        if (i > Entete_TOF(F , 1)) {
+        if (i > Entete_index(F , 1)) {
             Buf->Tab[0] = e;
             Buf->Nb = 1;
-            EcrireDir_TOF(F, i , Buf);
-            Aff_Entete_TOF(F , 1 , i);
+            EcrireDir_index(F, i , Buf);
+            Aff_Entete_index(F , 1 , i);
         }
-        Aff_Entete_TOF(F , 2 , Entete_TOF(F,2) + 1);
+        Aff_Entete_index(F , 2 , Entete_index(F,2) + 1);
     }
 }
 
-void Suppression_logique_TOF(int c,FILE* F , Buffer_TOF* Buf) {
+void Suppression_logique_index(int c,FILE* F , Buffer_index* Buf) {
     bool trouve;
     int i, j ;
 
-    rech_TOF(c , &trouve , &i , &j , F , Buf);
+    rech_index(c , &trouve , &i , &j , F , Buf);
     if (trouve) {
-        LireDir_TOF(F , i , Buf);
+        LireDir_index(F , i , Buf);
         Buf->Tab[j].eff = 1;
-        EcrireDir_TOF(F , i , Buf);
-        Aff_Entete_TOF(F , Entete_TOF(F, 3) + 1 , 3);
+        EcrireDir_index(F , i , Buf);
+        Aff_Entete_index(F , Entete_index(F, 3) + 1 , 3);
     }
 }
 
-void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
+void Reorganisation_index(FILE** F, float u, const char nomFichier[]) {
     int i1, j1, i2, j2, cpt;
-    Buffer_TOF Buf1, Buf2;
+    Buffer_index Buf1, Buf2;
     FILE* G;
 
     // Initialiser le nouveau fichier
@@ -712,9 +697,9 @@ void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
     cpt = 0;
 
     // Boucler à travers chaque bloc dans le fichier original
-    for (i1 = 1; i1 <= Entete_TOF(*F, 1); i1++) {
+    for (i1 = 1; i1 <= Entete_index(*F, 1); i1++) {
         // Lire un bloc depuis le fichier original
-        LireDir_TOF(*F, i1, &Buf1);
+        LireDir_index(*F, i1, &Buf1);
 
         // Boucler à travers chaque enregistrement dans le bloc
         for (j1 = 0; j1 < Buf1.Nb; j1++) {
@@ -729,7 +714,7 @@ void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
                 if (j2 >= u * B) {
                     // Écrire le nouveau tampon dans le nouveau fichier
                     Buf2.Nb = j2;
-                    EcrireDir_TOF(G, i2, &Buf2);
+                    EcrireDir_index(G, i2, &Buf2);
                     i2++;
                     j2 = 0;
                 }
@@ -740,13 +725,13 @@ void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
     // Si le dernier tampon n'était pas complètement rempli, écrivez-le dans le nouveau fichier
     if (j2 > 0) {
         Buf2.Nb = j2;
-        EcrireDir_TOF(G, i2, &Buf2);
+        EcrireDir_index(G, i2, &Buf2);
         i2++;
     }
 
     // Mettre à jour l'en-tête du nouveau fichier
-    Aff_Entete_TOF(G, i2 - 1, 1);  // Définir le nombre de blocs
-    Aff_Entete_TOF(G, cpt, 2);     // Définir le nombre total d'enregistrements
+    Aff_Entete_index(G, i2 - 1, 1);  // Définir le nombre de blocs
+    Aff_Entete_index(G, cpt, 2);     // Définir le nombre total d'enregistrements
 
     // Fermer les deux fichiers
     fclose(*F);
@@ -770,6 +755,5 @@ void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
     INIT(F, nomFichier, "A");
 
 }
-
-
 #endif  
+
