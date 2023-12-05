@@ -12,10 +12,6 @@
 
 #define B 6 // Nb enregistrement par bloc
 
-typedef struct {
-    int NB_char;
-    int Tab_n[30];
-} TNOM_PRENOM;
 
 typedef struct {
     int annee;
@@ -25,8 +21,8 @@ typedef struct {
 
 typedef struct {
     int Matricule;
-    TNOM_PRENOM  Nom ;
-    TNOM_PRENOM  Prenom ;
+    char* Nom ;
+    char* Prenom ;
     TDate_Naissance DATE;
     int wilaya ;
     int Groupe_Sanguin;
@@ -51,6 +47,10 @@ typedef struct {
  }tab_utilise;
 
 const int Taille_entete = sizeof(TEntete);
+
+// tableau des lettres
+
+char* tab_lettres= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 // tableau des wilayas
 
@@ -204,11 +204,9 @@ tab_utilise* tab_matricule(int N)
     return TAB;
 }
 
-
 int getRandomNumber(int min, int max) {
     return min + rand() % (max - min + 1);
 }
-
 
 bool intervale (int value, int tableau[], int taille) {
     for (int i = 0; i < taille; ++i) {
@@ -225,9 +223,9 @@ void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
     tab_utilise* tab_mat = tab_matricule(n);
     bool inser_matricule ;
     int random2;
-    int valeurs1[] = {4, 6, 9, 11};
+    int valeurs1[4] = {4, 6, 9, 11};
     int valeurs2[7] = {1,3,5,7,8,10,12};
-
+    int rand_lettre ;
     for (int k = 0; k < n; k++) {
        inser_matricule = false ;
         if (j < B) {
@@ -245,25 +243,26 @@ void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
                inser_matricule = true ;
             }
             } 
-
+  
 
           //chargement de nom
 
-            Buf->Tab[j].Nom.NB_char = getRandomNumber(4,30) ;
 
-            for (k1 = 0; k1 < Buf->Tab[j].Nom.NB_char; k1++)
-            {
-                Buf->Tab[j].Nom.Tab_n[k1] =getRandomNumber(1,26) ;
-            }
+           for (int k0 = 0; k0 <= (getRandomNumber(4,30)); k0++)
+           { 
+            rand_lettre = getRandomNumber(1,26);
+             Buf->Tab[j].Nom[k0] = tab_lettres[rand_lettre];
+           }
 
+           
         //chargement de prenom
 
-            Buf->Tab[j].Prenom.NB_char = getRandomNumber(4,30)  ;
+           for (int k0 = 0; k0 <= (getRandomNumber(4,30)); k0++)
+           { 
+            rand_lettre = getRandomNumber(1,26);
+             Buf->Tab[j].Prenom[k0] = tab_lettres[rand_lettre];
+           }
 
-            for (k1 = 0 ; k1 < (Buf->Tab[j].Prenom.NB_char) ; k1++  )
-            {
-                Buf->Tab[j].Prenom.Tab_n[k1] = getRandomNumber(1,26);
-            }
 
         //chargement de l'année de naissance
 
@@ -338,22 +337,22 @@ void Chargement_initial_TObarreF(FILE* F, int n, Buffer* Buf) {
 
 
           //chargement de nom
+          
 
-            Buf->Tab[0].Nom.NB_char = getRandomNumber(4,30) ;
-
-            for (k1 = 0; k1 < Buf->Tab[j].Nom.NB_char; k1++)
-            {
-                Buf->Tab[0].Nom.Tab_n[k1] =getRandomNumber(1,26) ;
-            }
+           for (int k0 = 0; k0 <= (getRandomNumber(4,30)); k0++)
+           { 
+            rand_lettre = getRandomNumber(1,26);
+             Buf->Tab[j].Nom[k0] = tab_lettres[rand_lettre];
+           }
 
         //chargement de prenom
 
-            Buf->Tab[0].Prenom.NB_char = getRandomNumber(4,30)  ;
 
-            for (k1 = 0 ; k1 < (Buf->Tab[0].Prenom.NB_char) ; k1++  )
-            {
-                Buf->Tab[0].Prenom.Tab_n[k1] = getRandomNumber(1,26);
-            }
+           for (int k0 = 0; k0 <= (getRandomNumber(4,30)); k0++)
+           { 
+            rand_lettre = getRandomNumber(1,26);
+             Buf->Tab[j].Prenom[k0] = tab_lettres[rand_lettre];
+           }
 
         //chargement de l'année de naissance
 
@@ -629,14 +628,14 @@ void rech_TOF(int c, bool* Trouve, int* i, int* j, FILE* F, Buffer_index* Buf) {
 }
 
 
-void Inserer_TOF(int c , int bloc , int enreg  , FILE* F , Buffer_index* Buf) {
+void Inserer_TOF(int c , int bloc , int enreg ,bool eff , FILE* F , Buffer_index* Buf) {
     bool trouve , continu;
     int i,j,k;
     TEnregistre_index e,x;
     e.Matricule = c;
     e.bloc= bloc ;
     e.enrg = enreg ;
-    e.eff = 0;
+    e.eff = eff;
     rech_TOF(c , &trouve , &i , &j , F , Buf);
     if (!trouve) {
         continu = true;
@@ -671,20 +670,20 @@ void Inserer_TOF(int c , int bloc , int enreg  , FILE* F , Buffer_index* Buf) {
     }
 }
 
-void Suppression_logique_TOF(int c,FILE* F , Buffer_index* Buf) {
+void Suppression_logique_index(int c,FILE* F , Buffer_index* Buf) {
     bool trouve;
     int i, j ;
 
     rech_TOF(c , &trouve , &i , &j , F , Buf);
     if (trouve) {
         LireDir_index(F , i , Buf);
-        Buf->Tab[j].eff = 1;
+        Buf->Tab[j].eff = true ;
         EcrireDir_index(F , i , Buf);
         Aff_Entete_index(F , Entete_index(F, 3) + 1 , 3);
     }
 }
 
-void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
+void Reorganisation_index(FILE** F, float u, const char nomFichier[]) {
     int i1, j1, i2, j2, cpt;
     Buffer_index Buf1, Buf2;
     FILE* G;
@@ -704,7 +703,7 @@ void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
         // Boucler à travers chaque enregistrement dans le bloc
         for (j1 = 0; j1 < Buf1.Nb; j1++) {
             // Vérifier si l'enregistrement n'est pas marqué pour la suppression
-            if (Buf1.Tab[j1].eff == 0) {
+            if (Buf1.Tab[j1].eff == false) {
                 // Copier l'enregistrement vers le nouveau tampon
                 Buf2.Tab[j2] = Buf1.Tab[j1];
                 cpt++;
@@ -756,13 +755,34 @@ void Reorganisation_TOF(FILE** F, float u, const char nomFichier[]) {
 
 }
 
+TEnregistre_index* chargement_initial_index (FILE* F ,Buffer_index* Buf)
+{
+ int N = Entete(F,1);
+ TEnregistre_index* tab_index = (TEnregistre_index*)malloc(10000);
+
+ int i = 1, j = 1, k = 0;
+ while (i<=N)
+ {  while (j<=Buf->Nb)
+   {LireDir_index( F, i, Buf );
+    tab_index[k].Matricule = Buf->Tab[j].Matricule;
+    tab_index[k].bloc = i;
+    tab_index[k].enrg = j;
+    tab_index[k].eff = false;
+    k++;
+   j++;}
+   i++;
+   j=1;
+ }
+ return tab_index;
+}
+
 void chargement_TOF_par_Table_index (TEnregistre_index* T, FILE* F ) {
     FILE* fichier_index ;
     Buffer_index* Buf ;
     int i;
     int taille = Entete(F , 1);
     for (i = 0 ; i< taille ; i++) {
-        Inserer_TOF(T[i].Matricule , T[i].bloc, T[i].enrg, fichier_index , Buf) ;
+        Inserer_TOF(T[i].Matricule , T[i].bloc, T[i].enrg, T[i].eff, fichier_index , Buf) ;
     }
 
 }
@@ -786,7 +806,17 @@ void Rech_dichoto_dans_table_index (int cle , TEnregistre_index* T , bool *trouv
    if ( !trouv) {
     *i = bi ;
    }
-} 
+}
+
+ void suppression_index( FILE* F, int c ,TEnregistre_index* *tab )
+ {
+    int taille = Entete(F , 1) - 1 ;
+    int i;
+    bool trouv;
+   Rech_dichoto_dans_table_index(c ,*tab , &trouv , &i,taille );
+   (*tab[i]).eff= true ;
+ }
+
 
 void isertion_de_e_dans_la_table_index (int cle , int bloc , int enregistrement , TEnregistre_index* *T , FILE* F) {
 TEnregistre_index e ;
@@ -798,7 +828,7 @@ taille = Entete(F , 1) - 1;
 e.Matricule = cle ;
 e.bloc = bloc ;
 e.enrg = enregistrement ;
-e.eff = 0 ;
+e.eff = false ;
 Rech_dichoto_dans_table_index(cle ,*T , &trouv , &i,taille );
 if(!trouv) { 
 j = taille ;
@@ -814,6 +844,8 @@ if ( j == i)
 }
 }
  
-#endif  
+#endif   
+
+
 
 
